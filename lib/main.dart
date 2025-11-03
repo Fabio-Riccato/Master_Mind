@@ -43,16 +43,16 @@ class MasterMind extends StatefulWidget {
 }
 
 class _MasterMind extends State<MasterMind> {
-  List <bool> _verified = [];
-  List<List<Color>> _coloriButtons = [];
-  List<List<bool>> _enabledButtons = [];
-  List<List<Color>> _feedbackPins = [];
+  List <bool> _verified = []; //rige verificate e non (già confrontate con la soluzione)
+  List<List<Color>> _coloriButtons = [];//stato dei colori dei bottoni
+  List<List<bool>> _enabledButtons = [];//bottoni attivati
+  List<List<Color>> _feedbackPins = [];//colori dei pins che danno il feedback al giocatore
   final List<Color> _colori = [Colors.red,Colors.orange,Colors.yellow,Colors.green, Colors.blue,   Colors.brown, Colors.black, Colors.white];
-  late List<List<Button>> _buttons;
-  List<Color> _corrects = [];
+  late List<List<Button>> _buttons; //lista contenente i bottoni che viene inizializzata ad initState
+  List<Color> _corrects = []; //lista con la combinazione di colori corretti
   final int _nRighe = 10;
   final int _nColonne = 4;
-  String _stato = "Partita in cosro...";
+  String _stato = "Partita in cosro...";//stato della partita
 
 
   @override
@@ -60,8 +60,8 @@ class _MasterMind extends State<MasterMind> {
     super.initState();
     _corrects = UtileMasterMind.combinazioneColori(_colori);
     _verified = List.generate(_nRighe, (_)=> false);
-    _coloriButtons = List.generate(_nRighe, (_) => List.generate(_nColonne, (_) => Colors.grey));
-    _enabledButtons = List.generate(_nRighe, (r) => List.generate(_nColonne, (_) => r == 0));
+    _coloriButtons = List.generate(_nRighe, (_) => List.generate(_nColonne, (_) => Colors.grey));//colore iniziale dei pulsanti
+    _enabledButtons = List.generate(_nRighe, (r) => List.generate(_nColonne, (_) => r == 0));//bottoni attivati solo se siamo nella prima riga
     _feedbackPins = List.generate(_nRighe, (_) => List.generate(4, (_) => Colors.grey)); 
     _buttons = _creaButtons();
   }
@@ -76,15 +76,17 @@ class _MasterMind extends State<MasterMind> {
           isEnabled: _enabledButtons[r][c], 
           onColorChanged: (riga, col, colore) {
             setState(() {
-              _coloriButtons[riga][col] = colore;
+              _coloriButtons[riga][col] = colore; //imposto la matrice con tutti i colori al colore del pulsante
             });
-          },
+          },//funzione che verrà chiamata dal bottone stesso quando cambierà colore
         )
       )
     );
   }
 
   void _verifica(int riga) {
+    //verifico che: la riga del pulsante che è stao premuto sia attivata, che tutti i pulsanti siano stati premuti almeno 1 volta e
+    //che la riga noon sia già stata confrontata con la soluzione
     if (_enabledButtons[riga][0] && !_coloriButtons[riga].contains(Colors.grey) && !_verified[riga]) {
       _verified[riga] = true;
       int posCorrette = UtileMasterMind.posUguali(_corrects, _coloriButtons[riga]);
@@ -96,6 +98,7 @@ class _MasterMind extends State<MasterMind> {
             _feedbackPins[riga][i] = Colors.green;
           }
           _mostraPopupFinePartita("Hai vinto!");
+          //se tutti i colori sono corretti mostro tutti i pin verdi ed il popup
         }else if (riga == _nRighe - 1) {
           _stato = "Hai perso!";
           for (int i = 0; i < posCorrette; i++) {
@@ -105,6 +108,7 @@ class _MasterMind extends State<MasterMind> {
             _feedbackPins[riga][i] = Colors.red;
           }
           _mostraPopupFinePartita("Hai perso!", mostraSoluzione: true);
+          //se sono sull'ultima riga mostro i pin corretti e non e mostro il pupup
         }else{
           for (int i = 0; i < posCorrette; i++) {
             _feedbackPins[riga][i] = Colors.black;
@@ -115,12 +119,15 @@ class _MasterMind extends State<MasterMind> {
           for (int i = posCorrette + posDiv; i < 4; i++) {
             _feedbackPins[riga][i] = Colors.grey;
           }
+          //coloro i pin in base ai colori azzeccati
           if (riga + 1 < _nRighe) {
             for (int i = 0; i < _nColonne; i++) {
+              //attivo i bottoni della riga successiva
               _enabledButtons[riga + 1][i] = true;
             }
           }
           for (int i = 0; i < _nColonne; i++) {
+            //disattivo i bottoni della riga corrente
             _enabledButtons[riga][i] = false;
           }
           _buttons = _creaButtons();
@@ -136,20 +143,24 @@ class _MasterMind extends State<MasterMind> {
     );
     List<Widget> widgets = [];
     for (int i = 0; i < _nRighe; i++) {
-      List<Widget> feedback = _feedbackPins[i].map((colore) {
-        return Container(
+      List<Widget> feedback = [];
+      for (var colore in _feedbackPins[i]) {
+        // Crea il Container per il singolo pin.
+        final pinWidget = Container(
           width: 15,
           height: 15,
           margin: const EdgeInsets.symmetric(horizontal: 2),
           decoration: BoxDecoration(
-            color: colore,
+            color: colore, // Utilizza il colore corrente
             shape: BoxShape.circle,
             border: Border.all(color: Colors.black),
           ),
         );
-      }).toList();
+        feedback.add(pinWidget);
+      }
       
       if(_enabledButtons[i][0]){
+// se la riga contiene bottoni attivati allora deve esserci anche il pulsante check
         widgets.add(Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -164,7 +175,7 @@ class _MasterMind extends State<MasterMind> {
             )),
             child: const Text("Check"),
           ),
-          ..._buttons[i],
+          ..._buttons[i],//prende tutti i bottoni separatamente e lli inserisce in widgets
           const SizedBox(width: 20),
           ...feedback,
         ],
@@ -173,7 +184,7 @@ class _MasterMind extends State<MasterMind> {
         widgets.add(Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            space,
+            space,//sizedBox di = grandezza rispetto al pulsante check in modo che le linee siano allineate
             ..._buttons[i],
             const SizedBox(width: 20),
             ...feedback,
@@ -203,11 +214,12 @@ class _MasterMind extends State<MasterMind> {
               icon: const Icon(Icons.close),
               onPressed: () {
                 Navigator.of(context).pop();
+                //si chiude il popup
               },
             ),
           ],
         ),
-        content: mostraSoluzione
+        content: mostraSoluzione //se deve mostrare anche la soluzione (partita persa)
             ? Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -237,7 +249,8 @@ class _MasterMind extends State<MasterMind> {
             child: const Text("Nuova partita"),
             onPressed: () {
               Navigator.of(context).pop(); 
-              _nuovaPartita();            
+              _nuovaPartita();
+              //si chiude il popup e qiama nuovaPartita            
             },
           ),
         ],
@@ -247,15 +260,16 @@ class _MasterMind extends State<MasterMind> {
 }
 
 void _nuovaPartita () {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, _, __) =>
-            const MasterMind(title: 'Master Mind'),
-        transitionDuration: Duration.zero,
-      ),
-    );
-  }
+  //obblica a ricaricare l'app
+  Navigator.pushReplacement(
+    context,
+    PageRouteBuilder(
+      pageBuilder: (context, _, __) =>
+          const MasterMind(title: 'Master Mind'),
+      transitionDuration: Duration.zero,
+    ),
+  );
+}
 
   @override
   Widget build (BuildContext context) {
@@ -284,11 +298,11 @@ void _nuovaPartita () {
                     ),
                   );
                 }).toList(),
-              ),
+              ),//mette tutti i colori disponibili
             const SizedBox(height: 40),
-            ...generate(),
+            ...generate(),//mette i pulsanti
             const SizedBox(height: 20),
-              Text(_stato, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(_stato, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),//mette il testo con lo stato
             ]
           ),
         ),
@@ -302,7 +316,7 @@ void _nuovaPartita () {
           icon: Icon(Icons.refresh),
           color: Colors.black,
           onPressed: _nuovaPartita,
-        ),
+        ),//pulsante che permettere di ricominciare la partita
       ),
     );
   }
