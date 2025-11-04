@@ -130,7 +130,7 @@ class _MasterMind extends State<MasterMind> {
             //disattivo i bottoni della riga corrente
             _enabledButtons[riga][i] = false;
           }
-          _buttons = _creaButtons();
+          _buttons = _creaButtons();//ricreo i bottoni cosi si attivano i pulsanti della riga successiva
         }
       });
     }

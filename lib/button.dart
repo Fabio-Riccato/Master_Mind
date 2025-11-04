@@ -5,7 +5,7 @@ class Button extends StatefulWidget {
   final int colonna;
   final List<Color> coloriDisponibili;
   final bool isEnabled;
-  final Function(int r, int c, Color colore)? onColorChanged;
+  final Function(int r, int c, Color colore)? onColorChanged;//funzione che segnala il cambiamento di colore passata come parametro quando instanzio il bottone
 
   const Button({
     super.key,
@@ -23,6 +23,7 @@ class Button extends StatefulWidget {
 class _ButtonState extends State<Button> {
   Color _currentColor = Colors.grey;
 
+  //funzione che cambia il colore internamente
   void _cambiaColore() {
     if (!widget.isEnabled) return;
 
@@ -38,7 +39,7 @@ class _ButtonState extends State<Button> {
     });
 
     if (widget.onColorChanged != null) {
-      widget.onColorChanged!(widget.riga, widget.colonna, _currentColor);
+      widget.onColorChanged!(widget.riga, widget.colonna, _currentColor);//quando il pulsante cambia il colore lo segnalo al main
     }
   }
 
@@ -47,7 +48,7 @@ Widget build(BuildContext context) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 5),
     child: IgnorePointer( 
-      ignoring: !widget.isEnabled,
+      ignoring: !widget.isEnabled,//se il pulsante è disattivato rimangono comunque i colori
       child: ElevatedButton(
         onPressed: _cambiaColore, 
         style: ElevatedButton.styleFrom(
