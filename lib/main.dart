@@ -52,7 +52,7 @@ class _MasterMind extends State<MasterMind> {
   List<Color> _corrects = []; //lista con la combinazione di colori corretti
   final int _nRighe = 10;
   final int _nColonne = 4;
-  String _stato = "Partita in cosro...";//stato della partita
+  String _stato = "Partita in corso...";//stato della partita
 
 
   @override
